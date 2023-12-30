@@ -15,6 +15,7 @@ def getWebDriver():
     options.add_argument('--ignore-certificate-errors')
     options.add_argument('--allow-running-insecure-content')
     options.add_argument(f'user-agent={user_agent}')
+
     chrome_driver_binary = "/Users/yashjaybhaye/Programming/Spring/Spring Boot/jobbinator.io/chromedriver"
     driver = webdriver.Chrome( options)
     return driver

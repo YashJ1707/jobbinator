@@ -13,37 +13,73 @@ from services.tags_extraction.tags import getTags
 def scrapeJobs(driver):
     try:
         scrapedData=[]
-        #Get driver and webpage
-        # driver=getWebDriver()
-        # driver.get(url)
+        # driver.refresh()
+        # sleep(2)
+        # try:
+        #     pop_up=driver.find_element(By.XPATH,'//*[@id="mosaic-desktopserpjapopup"]/div[1]/button')
+        #     pop_up.click()
+        # except:
+        #     print("no pop up")
+        # sleep(2)
         driver.maximize_window()
         jobNumber=1
-
+        
         # Get number of pages for pagination
-        nav=driver.find_element(By.CLASS_NAME, 'jobsearch-LeftPane').find_element(By.TAG_NAME, 'nav')
-        pages: int=int(len(nav.find_elements(By.TAG_NAME, 'div'))-1)
-
+        nav=driver.find_element(By.XPATH, '//*[@id="jobsearch-JapanPage"]/div/div[5]/div[1]/nav/ul')
+        pages: int=int(len(nav.find_elements(By.TAG_NAME, 'li'))-1)
         while(pages>0):
 
             sleep(0.1)
 
+            # initial_url=driver.current_url
             # Scrape each job
             jobList=driver.find_elements(by=By.XPATH, value='//*[@id="mosaic-provider-jobcards"]/ul/li')
             for job in jobList:
+                
                 try:
                     # Get basic details
                     WebDriverWait(driver, 2).until(EC.presence_of_element_located((By.TAG_NAME, 'a')))
                     try:
                         jobName=job.find_element(by=By.TAG_NAME, value="a")
                     except Exception as error:
-                        # print(error)
                         print(job.text)
+
                     
                     buttons=getNavButtons(driver)
 
                     # Click on the job panel
                     driver.execute_script("arguments[0].scrollIntoView();", jobName)
                     driver.execute_script("arguments[0].click();", jobName)
+
+                    #Check if a new page is opened on clicking the panel
+                    # if EC.url_changes(initial_url):
+                    #     sleep(2)
+                    #     driver.back()
+                    #     driver.refresh()
+                    #     # break
+                    #     # sleep(6)
+                    #     # scrapeJobs(driver)
+                    #     # WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.CSS_SELECTOR,'#jobsearch > div > div.css-1v15at1.eu4oa1w0 > button')))
+                    #     # driver.find_element(By.CSS_SELECTOR,'#jobsearch > div > div.css-1v15at1.eu4oa1w0 > button').click()
+                    #     # 
+                    #     # sleep(5)
+                    #     try:
+                           
+                    #         jobList=driver.find_elements(by=By.XPATH, value='//*[@id="mosaic-provider-jobcards"]/ul/li')
+                    #         jobName=job.find_element(by=By.TAG_NAME, value="a")
+                    #         buttons=getNavButtons(driver)
+                    #         nav=driver.find_element(By.CLASS_NAME,"css-jbuxu0")
+                    #         pages: int=int(len(nav.find_elements(By.TAG_NAME, 'div'))-1)
+                    #         initial_url=driver.current_url
+                    #         # pages=pages-1
+                    #         # if(pages==0):
+                    #         #     break
+                    #         # continue
+                    #     except:
+                    #         print("no issues")
+                        # driver.execute_script("arguments[0].scrollIntoView();", jobName)
+                        # driver.execute_script("arguments[0].click();", jobName)
+                        # continue
 
                     # Wait for the job panel to open
                     WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.XPATH, '//*[@id="jobsearch-ViewjobPaneWrapper"]/div/div/div')))
@@ -55,6 +91,7 @@ def scrapeJobs(driver):
                             companyName=driver.find_element(By.XPATH,'//*[@id="jobsearch-ViewjobPaneWrapper"]/div/div/div/div[1]/div/div[2]/div[2]/div/div/div/div[1]/div[1]/span/a').text
                         except:
                             print("company name")
+                    print(companyName)
                     try:
                         companyLocation=job.find_element(By.XPATH,'//*[@id="jobsearch-ViewjobPaneWrapper"]/div/div/div/div[1]/div/div[1]/div[2]/div/div/div/div[2]/div').text
                         
@@ -98,11 +135,12 @@ def scrapeJobs(driver):
                         tags=tags+skills+","
                     tags=tags[:-1]
                     print(tags)
-                    scrapedJob=Job(companyName,jobName.text,date,salary,companyLocation,description,jobName.get_attribute('href'),tags)  
+                    scrapedJob=Job(companyName,jobName.text,date,salary,companyLocation,description,jobName.get_attribute('href'),tags,"Indeed")  
                     scrapedData.append(scrapedJob)
                     sleep(1.5)
 
                 except Exception as ex:
+                    driver.save_screenshot("screenshot.png")
                     print(ex)
 
             # Click next on next job
@@ -134,13 +172,14 @@ def scrapeJobs(driver):
             print(err)
             print("error adding data")
     except Exception as ex:
+            driver.save_screenshot("screenshot.png")
             print(scrapedData)
             print("error")
             print(ex)
     
 # Function to get button to go to next page
 def getNavButtons(driver: webdriver):
-    nav=driver.find_element(By.CLASS_NAME, 'jobsearch-LeftPane').find_element(By.TAG_NAME, 'nav')
+    nav=driver.find_element(By.XPATH, '//*[@id="jobsearch-JapanPage"]/div/div[5]/div[1]/nav')
     buttons=nav.find_elements(By.CLASS_NAME,"css-akkh0a")
     return buttons
 

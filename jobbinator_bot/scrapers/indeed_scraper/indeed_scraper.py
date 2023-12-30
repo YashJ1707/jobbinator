@@ -24,6 +24,3 @@ def scrapeIndeedJobs():
             scrapeJobs(driver)
         except:
             driver.save_screenshot("screenshot.png")
-
-        
-    
